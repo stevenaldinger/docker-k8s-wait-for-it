@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      initContainers:
+      - name: redis-init
+        image: "stevenaldinger/docker-k8s-wait-for-it:latest"
+        imagePullPolicy: Always
+        env:
+        # if WAIT_FOR_IT isn't set to true it'll skip this
+        - name: WAIT_FOR_IT
+          # value: "false"
+          value: "true"
+
+        # <service-name>.<namespace>;anotherservice.itsnamespace
+        - name: WAIT_FOR_PODS
+          # value: "mysql.test"
+          value: ""
+
+        # # waits for external IP to be provisioned before containers launch
+        - name: WAIT_FOR_EXTERNAL_IPS
+          # value: "nginx.test"
+          value: ""
+
+        - name: WAIT_FOR_DNS_MATCHES
+          # value: "drone.example.com=35.237.17.17;example.com=35.237.17.19"
+          value: ""
+      containers:
+      - name: redis
+        image: redis
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: redis
+          containerPort: 6379
