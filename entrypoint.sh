@@ -20,6 +20,30 @@ else
     exit 0
   fi
 
+
+  # # accept string of semicolon separated "node-pool-name=3" strings
+  # # each string has a comma separated number of nodes to wait for
+  # IFS=';' read -ra K8S_NODES <<< "$WAIT_FOR_NODES"
+  # for k8s_node_pool in "${K8S_NODES[@]}"; do
+  #   IFS='=' read -ra NODE_POOL_NAME_AND_COUNT <<< "$k8s_node_pool"
+  #
+  #   node_pool_name=${NODE_POOL_NAME_AND_COUNT[0]}
+  #   num_nodes_desired=${NODE_POOL_NAME_AND_COUNT[1]}
+  #
+  #   num_nodes_running=$(kubectl get nodes -o json | jq "[.items[].metadata.labels | select(.\"cloud.google.com/gke-nodepool\" == \"$node_pool_name\")] | length")
+  #
+  #   polling_wait_seconds=5
+  #   while [ "$num_nodes_running" -lt "$num_nodes_desired" ]
+  #   do
+  #     # Will update the same line in the shell until it finishes
+  #     echo -e "\r[notice] $second_counter seconds have passed waiting on nodes to become available..."
+  #
+  #     sleep $polling_wait_seconds
+  #
+  #     num_nodes_running=$(kubectl get nodes -o json | jq "[.items[].metadata.labels | select(.\"cloud.google.com/gke-nodepool\" == \"$node_pool_name\")] | length")
+  #   done
+  # done
+
   # accept string of semicolon separated "<service-name>.<namespace>" strings
   IFS=';' read -ra KUBERNETES_SERVICES_EXTERNAL_IPS <<< "$WAIT_FOR_EXTERNAL_IPS"
   for service in "${KUBERNETES_SERVICES_EXTERNAL_IPS[@]}"; do
@@ -84,7 +108,8 @@ else
   for dns_match in "${DNS_MATCHES[@]}"; do
     IFS='=' read -ra DOMAIN_AND_IP <<< "$dns_match"
 
-    domain_name=${DOMAIN_AND_IP[0]}
+    # was bugging out on malformatted DNS names like drone\\.grinsides\\.com
+    domain_name="$(echo ${DOMAIN_AND_IP[0]} | sed 's/\\//g')"
     ip_address=${DOMAIN_AND_IP[1]}
 
     # match DNS with an external IP before continuing

@@ -34,7 +34,7 @@ spec:
 
         - name: WAIT_FOR_DNS_MATCHES
           # value: "drone.example.com=35.237.17.17;example.com=35.237.17.19"
-          value: ""
+          value: "drone.example.com=35.237.17.17"
       containers:
       - name: redis
         image: redis
